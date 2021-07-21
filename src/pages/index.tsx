@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import { Header } from '../components/Header'
 
 export default function Home() {
   return (
@@ -6,7 +7,7 @@ export default function Home() {
       <Head>
         <title>Home | ig.news</title>
       </Head>
-      <h1>Hello, ig.news</h1>
+      <Header />
     </>
   )
 }
