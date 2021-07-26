@@ -20,7 +20,12 @@ export const config = {
   },
 };
 
-const relevantEvent = new Set(["checkout.session.completed"]);
+const relevantEvent = new Set([
+  "checkout.session.completed",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+]);
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -44,25 +49,48 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     if (relevantEvent.has(type)) {
       try {
         switch (type) {
-          case "checkout.session.completed":
-            const checkoutSession = event.data
-              .object as Stripe.Checkout.Session;
-            const customerData = {
-              subscriptionId: checkoutSession.subscription.toString(),
-              customerId: checkoutSession.customer.toString(),
-            };
+          case 'customer.subscription.created':
+            break
+
+          case 'customer.subscription.updated':
+            break
+          
+          case 'customer.subscription.deleted':
+            const subscription = event.data.object as Stripe.Subscription
             
             await saveSubscription(
-              customerData.subscriptionId,
-              customerData.customerId
-            );
+              subscription.id,
+              subscription.customer.toString(),
+              false
+            )
+            
+            break          
+          case 'checkout.session.completed':
+            const checkoutSession = event.data.object as Stripe.Checkout.Session
 
-            break;
+            const customerData = {
+              subscriptionId: checkoutSession.subscription.toString(),
+              customerId: checkoutSession.customer.toString()
+            }
+
+            try {
+              await saveSubscription(
+                customerData.subscriptionId,
+                customerData.customerId,
+                true
+              )
+
+              console.log('\n > Created new subscription')
+            } catch (err) {
+              throw new Error(err.message)
+            }
+            break
+          
           default:
-            throw new Error("Unhandled event");
+            throw new Error('Unhandled event')
         }
       } catch (err) {
-        return res.json({ error: "Webhook handler failed" });
+        console.error(err.message)
       }
     }
 
