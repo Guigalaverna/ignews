@@ -1,20 +1,20 @@
-import Head from 'next/head'
-import { GetStaticProps } from 'next'
-import { SubscribeButton } from '../components/SubscribeButton'
+import Head from "next/head";
+import {GetStaticProps} from "next";
+import {SubscribeButton} from "../components/SubscribeButton";
 
-import styles from '../styles/home.module.scss'
-import { stripe } from '../services/stripe'
-import { formatPrice } from '../utils/formatPrice'
-import { formatSecondsToDays } from '../utils/formatDate'
+import styles from "../styles/home.module.scss";
+import {stripe} from "../services/stripe";
+import {formatPrice} from "../utils/formatPrice";
+import {formatSecondsToDays} from "../utils/formatDate";
 
 interface HomeProps {
   product: {
-    priceId: string
-    amount: number
-  }
+    priceId: string;
+    amount: number;
+  };
 }
 
-export default function Home({ product }: HomeProps) {
+export default function Home({product}: HomeProps) {
   return (
     <>
       <Head>
@@ -24,31 +24,33 @@ export default function Home({ product }: HomeProps) {
       <main className={styles.contentContainer}>
         <section className={styles.hero}>
           <span>👏 Hey, welcome</span>
-          <h1>News about the <span>React</span> world.</h1>
+          <h1>
+            News about the <span>React</span> world.
+          </h1>
           <p>
             Get access to all the publications <br />
             <span>for {product.amount} month</span>
           </p>
-          <SubscribeButton priceId={product.priceId}/>
+          <SubscribeButton priceId={product.priceId} />
         </section>
         <img src="./avatar.svg" alt="Girl coding" />
       </main>
     </>
-  )
+  );
 }
 
-export const getStaticProps: GetStaticProps = async (ctx) => {
-  const price = await stripe.prices.retrieve('price_1JFmNnCbRv0xB5Pldg7DojVg')
+export const getStaticProps: GetStaticProps = async ctx => {
+  const price = await stripe.prices.retrieve("price_1Ke4kBCUrMzJhcR0tKkDLYxU");
 
   const product = {
     priceId: price.id,
     amount: formatPrice(price.unit_amount / 100),
-  }
+  };
 
   return {
     props: {
-      product
+      product,
     },
-    revalidate: formatSecondsToDays(60)
-  }
-}
+    revalidate: formatSecondsToDays(60),
+  };
+};
